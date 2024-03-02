@@ -2,6 +2,14 @@ import tkinter as tk
 from tkinter import ttk
 from my_functions import *
 
+
+##
+## Main window
+def load_main_window():
+    
+
+
+
 #
 # all entries container
 def container_of_entries(feed):

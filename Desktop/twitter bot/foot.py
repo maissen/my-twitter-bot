@@ -1,6 +1,4 @@
-from PyQt5.uic import loadUi
-from PyQt5.QtWidgets import QApplication, QWidget, QScrollArea, QLabel, QVBoxLayout, QComboBox
-from PyQt5.QtCore import Qt
+
 import load_entries_in_window
 
 added_rss_links = []
@@ -23,11 +21,4 @@ def parse_feed():
             recent_rss_links.removeItem(1)
     
 
-
-
-app = QApplication([])
-windows = loadUi("foot.ui")
-windows.show()
-windows.save_new_link.clicked.connect(parse_feed) #to save new links
-windows.parse_link.clicked.connect(load_entries_in_window.load_entries)
-app.exec_()
+load_main_window()
