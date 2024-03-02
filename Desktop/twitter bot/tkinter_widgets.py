@@ -68,58 +68,50 @@ def show_clicked_entry_details(root, entry):
     # Create an instance of the Tk class
     window = tk.Toplevel(root)  # Use Toplevel for additional windows
     window.title(entry.title)
-
-    # Set the width and height of the window
-    window.geometry("750x400")
-
-    # Set the padding of the window
-    window.configure(padx=15, pady=15)
+    
+    window.geometry("750x400") # Set the width and height of the window    
+    window.configure(padx=15, pady=15) # Set the padding of the window
 
     # Create the first label and text input field
-    label1 = tk.Label(window, text="Entry's title:")
-    label1.grid(row=0, column=0, pady=10)
-    text_input1 = tk.Text(window, height=5, width=30)
-    text_input1.grid(row=0, column=1, sticky="ew", pady=(0, 20))  # Add a bottom margin of 20px
-    if('title' in entry.keys()): # Insert the entry's title into the text input field if the title exists
-        text_input1.insert("1.0", entry.title)
+    title_label = tk.Label(window, text="Entry's title:")
+    title_label.grid(row=0, column=0, pady=10)
+    entry_title = tk.Text(window, height=5, width=30)
+    entry_title.grid(row=0, column=1, sticky="ew", pady=(0, 20))  # Add a bottom margin of 20px
+    
+    if('title' in entry.keys()):
+        entry_title.insert("1.0", entry.title)
     else:
-        text_input1.insert("1.0", "This entry doesn't have a title to show!")
-
-    # Create a scrollbar for the first text input field
-    scrollbar1 = tk.Scrollbar(window, command=text_input1.yview)
+        entry_title.insert("1.0", "This entry doesn't have a title to show!")
+    
+    scrollbar1 = tk.Scrollbar(window, command=entry_title.yview) # Create a scrollbar for the first text input field
     scrollbar1.grid(row=0, column=2, sticky="ns")
-    text_input1.config(yscrollcommand=scrollbar1.set) # Link the scrollbar to the first text input field
+    entry_title.config(yscrollcommand=scrollbar1.set) # Link the scrollbar to the first text input field
 
     # Create the second label and text input field
-    label2 = tk.Label(window, text="Entry's description:")
-    label2.grid(row=1, column=0, pady=10)
+    summary_label = tk.Label(window, text="Entry's summary:")
+    summary_label.grid(row=1, column=0, pady=10)
 
-    text_input2 = tk.Text(window, height=5, width=30)
-    text_input2.grid(row=1, column=1, sticky="ew", pady=(0, 20))  # Add a bottom margin of 20px
+    entry_summary = tk.Text(window, height=5, width=30)
+    entry_summary.grid(row=1, column=1, sticky="ew", pady=(0, 20))  # Add a bottom margin of 20px
     if('summary' in entry.keys()): 
-        text_input2.insert("1.0", entry.summary)
+        entry_summary.insert("1.0", entry.summary)
     else:
-        text_input2.insert("1.0", "This entry doesn't have a summary to show!")
-
-    # Create a scrollbar for the second text input field
-    scrollbar2 = tk.Scrollbar(window, command=text_input2.yview)
+        entry_summary.insert("1.0", "This entry doesn't have a summary to show!")
+   
+    scrollbar2 = tk.Scrollbar(window, command=entry_summary.yview) # Create a scrollbar for the second text input field
     scrollbar2.grid(row=1, column=2, sticky="ns")
-    text_input2.config(yscrollcommand=scrollbar2.set)
+    entry_summary.config(yscrollcommand=scrollbar2.set)
 
     # Create the third label and text input field
-    label3 = tk.Label(window, text="Enter Hashtags:")
-    label3.grid(row=2, column=0, pady=10)
+    hashtags_label = tk.Label(window, text="Recent Hashtags:")
+    hashtags_label.grid(row=2, column=0, pady=10)
 
-    text_input3 = tk.Text(window, height=5, width=30)
-    text_input3.grid(row=2, column=1, sticky="ew", pady=(0, 20))  # Add a bottom margin of 20px
-    text_input3_content = ""
-
-    # Create a scrollbar for the third text input field
-    scrollbar3 = tk.Scrollbar(window, command=text_input3.yview)
+    recent_hashtags = tk.Text(window, height=5, width=30)
+    recent_hashtags.grid(row=2, column=1, sticky="ew", pady=(0, 20))  # Add a bottom margin of 20px
+    
+    scrollbar3 = tk.Scrollbar(window, command=recent_hashtags.yview) # Create a scrollbar for the third text input field
     scrollbar3.grid(row=2, column=2, sticky="ns")
-
-    # Link the scrollbar to the third text input field
-    text_input3.config(yscrollcommand=scrollbar3.set)
+    recent_hashtags.config(yscrollcommand=scrollbar3.set)
 
     # Create a frame to hold the buttons
     button_frame = tk.Frame(window)
@@ -130,7 +122,7 @@ def show_clicked_entry_details(root, entry):
     button_search.pack(side="left", padx=5)  # Add a left padding of 5px
 
     # Create a button labeled "Share now"
-    button_share = tk.Button(button_frame, text="Share now", command=lambda: push_post_to_twitter())
+    button_share = tk.Button(button_frame, text="Share now", command=lambda: push_post_to_twitter(entry_title.get("1.0", "end-1c"), entry_summary.get("1.0", "end-1c"), recent_hashtags.get("1.0", "end-1c")))
     button_share.pack(side="right", padx=5)  # Add a right padding of 5px
 
     # Configure the grid to make the text input fields expand to fill the available space
