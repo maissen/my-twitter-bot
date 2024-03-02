@@ -11,3 +11,5 @@ def test_widget_from_gpt(root, entry):
     print(f'Title: {entry.title}')
     print(f'Description: {entry.description}')
     print(f'Publication Date: {entry.published}')
+    
+
