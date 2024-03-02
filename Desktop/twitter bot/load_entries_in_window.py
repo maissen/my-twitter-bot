@@ -7,7 +7,13 @@ from tkinter_widgets import *
 def load_rss_feed():
     link = 'https://news.google.com/rss/search?q=when:24h+allinurl:bloomberg.com&hl=en-US&gl=US&ceid=US:en'
     feed = feedparser.parse(link)
-    show_all_entries_container(feed)
+    container_of_entries(feed)
+#     print(feed.entries[0].keys())
+#     print(feed.entries[0].title)
+#     print('SUMMARY : ', feed.entries[0].summary_detail)
+#     print(feed.entries[0].summary_detail)
+#     print()
+#     print(feed.entries[0].link)
 
     
 

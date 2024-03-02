@@ -1,9 +1,10 @@
 import tkinter as tk
 from tkinter import ttk
+from my_functions import *
 
 #
 # all entries container
-def show_all_entries_container(feed):
+def container_of_entries(feed):
     # Create the main window
     root = tk.Tk()
     root.title('RSS Feed Entries')
@@ -65,75 +66,79 @@ def show_all_entries_container(feed):
 # to show the clicked entry info
 def show_clicked_entry_details(root, entry):
     # Create an instance of the Tk class
-    root = tk.Tk()
-    # Set the title of the window
-    root.title("Simple Window")
+    window = tk.Toplevel(root)  # Use Toplevel for additional windows
+    window.title(entry.title)
 
     # Set the width and height of the window
-    root.geometry("750x400")
+    window.geometry("750x400")
 
     # Set the padding of the window
-    root.configure(padx=15, pady=15)
+    window.configure(padx=15, pady=15)
 
     # Create the first label and text input field
-    label1 = tk.Label(root, text="Entry's title:")
+    label1 = tk.Label(window, text="Entry's title:")
     label1.grid(row=0, column=0, pady=10)
-
-    text_input1 = tk.Text(root, height=5, width=30)
+    text_input1 = tk.Text(window, height=5, width=30)
     text_input1.grid(row=0, column=1, sticky="ew", pady=(0, 20))  # Add a bottom margin of 20px
+    if('title' in entry.keys()): # Insert the entry's title into the text input field if the title exists
+        text_input1.insert("1.0", entry.title)
+    else:
+        text_input1.insert("1.0", "This entry doesn't have a title to show!")
 
     # Create a scrollbar for the first text input field
-    scrollbar1 = tk.Scrollbar(root, command=text_input1.yview)
+    scrollbar1 = tk.Scrollbar(window, command=text_input1.yview)
     scrollbar1.grid(row=0, column=2, sticky="ns")
-
-    # Link the scrollbar to the first text input field
-    text_input1.config(yscrollcommand=scrollbar1.set)
+    text_input1.config(yscrollcommand=scrollbar1.set) # Link the scrollbar to the first text input field
 
     # Create the second label and text input field
-    label2 = tk.Label(root, text="Entry's description:")
+    label2 = tk.Label(window, text="Entry's description:")
     label2.grid(row=1, column=0, pady=10)
 
-    text_input2 = tk.Text(root, height=5, width=30)
+    text_input2 = tk.Text(window, height=5, width=30)
     text_input2.grid(row=1, column=1, sticky="ew", pady=(0, 20))  # Add a bottom margin of 20px
+    if('summary' in entry.keys()): 
+        text_input2.insert("1.0", entry.summary)
+    else:
+        text_input2.insert("1.0", "This entry doesn't have a summary to show!")
 
     # Create a scrollbar for the second text input field
-    scrollbar2 = tk.Scrollbar(root, command=text_input2.yview)
+    scrollbar2 = tk.Scrollbar(window, command=text_input2.yview)
     scrollbar2.grid(row=1, column=2, sticky="ns")
-
-    # Link the scrollbar to the second text input field
     text_input2.config(yscrollcommand=scrollbar2.set)
 
     # Create the third label and text input field
-    label3 = tk.Label(root, text="Enter Hashtags:")
+    label3 = tk.Label(window, text="Enter Hashtags:")
     label3.grid(row=2, column=0, pady=10)
 
-    text_input3 = tk.Text(root, height=5, width=30)
+    text_input3 = tk.Text(window, height=5, width=30)
     text_input3.grid(row=2, column=1, sticky="ew", pady=(0, 20))  # Add a bottom margin of 20px
+    text_input3_content = ""
 
     # Create a scrollbar for the third text input field
-    scrollbar3 = tk.Scrollbar(root, command=text_input3.yview)
+    scrollbar3 = tk.Scrollbar(window, command=text_input3.yview)
     scrollbar3.grid(row=2, column=2, sticky="ns")
 
     # Link the scrollbar to the third text input field
     text_input3.config(yscrollcommand=scrollbar3.set)
 
     # Create a frame to hold the buttons
-    button_frame = tk.Frame(root)
+    button_frame = tk.Frame(window)
     button_frame.grid(row=3, column=1, sticky="n", pady=(25, 0))  # Add a top margin of 25px
 
     # Create a button labeled "Search on web"
-    button_search = tk.Button(button_frame, text="Search on web")
+    button_search = tk.Button(button_frame, text="Search Entry on web", command=lambda: search_entry(entry))
     button_search.pack(side="left", padx=5)  # Add a left padding of 5px
 
     # Create a button labeled "Share now"
-    button_share = tk.Button(button_frame, text="Share now")
+    button_share = tk.Button(button_frame, text="Share now", command=lambda: push_post_to_twitter())
     button_share.pack(side="right", padx=5)  # Add a right padding of 5px
 
     # Configure the grid to make the text input fields expand to fill the available space
-    root.grid_columnconfigure(1, weight=1)
+    window.grid_columnconfigure(1, weight=1)
 
-    # Start the event loop
-    root.mainloop()
+    # Start the event loop for this window
+    window.mainloop()
+
     
     
 
