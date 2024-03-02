@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+import pickle
 
 def load_main_window():
     # Create main window
@@ -9,11 +10,11 @@ def load_main_window():
     # Create a frame to contain label and entry for source
     source = ttk.Frame(window)
     source.grid(row=0, column=0, padx=10, pady=5, sticky="nsew")
-    rss_link_label = ttk.Label(source, text="Enter RSS link for source:") # Create the label for source
+    rss_link_label = ttk.Label(source, text="Enter RSS link for source:") 
     rss_link_label.grid(row=0, column=0, sticky="w", padx=(0, 5))
-    rss_link = ttk.Entry(source, width=30) # Create the text input field for source with padding
+    rss_link = ttk.Entry(source, width=30)
     rss_link.grid(row=0, column=1, sticky="w", padx=8, pady=10)
-    rss_link.configure(background="white")  # Set background color to white
+    rss_link.configure(background="white")
     
     # Create a frame to contain label and entry for title
     title = ttk.Frame(window)
@@ -48,41 +49,46 @@ def load_main_window():
 
 def load_saved_sources(saved_links_input):
     try:
-        # Read RSS sources from file
-        with open("My_rss_sources.txt", "r") as file:
-            rss_sources = file.readlines()
-            # Extract titles and set them as combobox values
-            titles = [line.split(":")[0].strip() for line in rss_sources]
+        with open("My_rss_sources.dat", "rb") as file:
+            rss_sources = pickle.load(file)
+            titles = [source["title"] for source in rss_sources]
             if titles:
                 saved_links_input["values"] = titles
-                saved_links_input.set(titles[0])  # Set the current selection to the first item
+                saved_links_input.set(titles[0])
     except FileNotFoundError:
         print("No RSS sources file found.")
 
 def save_rss(saved_links_input, rss_title, rss_link):
-    # Get RSS title and link
     title = rss_title.get()
     link = rss_link.get()
     
-    # Check if the RSS title and link are not empty
     if title and link:
-        # Check if the title is not already in the combobox
-        if title not in saved_links_input["values"]:
-            # Remove the placeholder if it exists
-            if "-- There's no RSS saved --" in saved_links_input["values"]:
-                saved_links_input.delete(saved_links_input["values"].index("-- There's no RSS saved --"))
-            # Append RSS title to the combobox values
-            saved_links_input["values"] = list(saved_links_input["values"]) + [title]
-            # Select the newly added title
-            saved_links_input.set(title)
-            # Clear the entry fields
-            rss_title.delete(0, tk.END)
-            rss_link.delete(0, tk.END)
-            # Save the new RSS source to file
-            with open("My_rss_sources.txt", "a") as file:
-                file.write(f"{title}: {link}\n")
-        else:
-            print("RSS title already exists!")
+        try:
+            with open("My_rss_sources.dat", "rb") as file:
+                rss_sources = pickle.load(file)
+        except FileNotFoundError:
+            rss_sources = []
+
+        for source in rss_sources:
+            if source["title"] == title:
+                print("RSS title already exists!")
+                return
+            if source["link"] == link:
+                print("RSS link already exists!")
+                return
+
+        rss_sources.append({"title": title, "link": link})
+        with open("My_rss_sources.dat", "wb") as file:
+            pickle.dump(rss_sources, file)
+
+        if "-- There's no RSS saved --" in saved_links_input["values"]:
+            saved_links_input.delete(saved_links_input["values"].index("-- There's no RSS saved --"))
+
+        saved_links_input["values"] = [source["title"] for source in rss_sources]
+        saved_links_input.set(title)
+
+        rss_title.delete(0, tk.END)
+        rss_link.delete(0, tk.END)
     else:
         if not link:
             print("RSS link is empty!")
