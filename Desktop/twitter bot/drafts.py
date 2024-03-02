@@ -36,12 +36,28 @@ def load_main_window():
     saved_links_input.configure(background="white")
     saved_links_input.set("-- There's no RSS saved --")
 
+    # Load saved RSS sources from file
+    load_saved_sources(saved_links_input)
+
     # Example button to call a function
     button = ttk.Button(window, text="Save RSS", command=lambda: save_rss(saved_links_input, rss_title, rss_link))
     button.grid(row=3, column=0, pady=5)  
 
     # Run the main event loop
     window.mainloop()
+
+def load_saved_sources(saved_links_input):
+    try:
+        # Read RSS sources from file
+        with open("My_rss_sources.txt", "r") as file:
+            rss_sources = file.readlines()
+            # Extract titles and set them as combobox values
+            titles = [line.split(":")[0].strip() for line in rss_sources]
+            if titles:
+                saved_links_input["values"] = titles
+                saved_links_input.set(titles[0])  # Set the current selection to the first item
+    except FileNotFoundError:
+        print("No RSS sources file found.")
 
 def save_rss(saved_links_input, rss_title, rss_link):
     # Get RSS title and link
@@ -55,16 +71,6 @@ def save_rss(saved_links_input, rss_title, rss_link):
             # Remove the placeholder if it exists
             if "-- There's no RSS saved --" in saved_links_input["values"]:
                 saved_links_input.delete(saved_links_input["values"].index("-- There's no RSS saved --"))
-            
-            # Check if the link already exists in the file
-            if link_exists(link):
-                print("RSS link already exists!")
-                return
-            
-            # Append RSS title and link to the file
-            with open("My_rss_sources.txt", "a") as file:
-                file.write(f"{title}: {link}\n")
-            
             # Append RSS title to the combobox values
             saved_links_input["values"] = list(saved_links_input["values"]) + [title]
             # Select the newly added title
@@ -72,6 +78,9 @@ def save_rss(saved_links_input, rss_title, rss_link):
             # Clear the entry fields
             rss_title.delete(0, tk.END)
             rss_link.delete(0, tk.END)
+            # Save the new RSS source to file
+            with open("My_rss_sources.txt", "a") as file:
+                file.write(f"{title}: {link}\n")
         else:
             print("RSS title already exists!")
     else:
@@ -79,18 +88,6 @@ def save_rss(saved_links_input, rss_title, rss_link):
             print("RSS link is empty!")
         elif not title:
             print("RSS title is empty!")
-
-def link_exists(link):
-    # Check if the link already exists in the file
-    try:
-        with open("My_rss_sources.txt", "r") as file:
-            for line in file:
-                if link in line:
-                    return True
-    except FileNotFoundError:
-        pass  # If the file doesn't exist, the link doesn't exist
-    
-    return False
 
 if __name__ == "__main__":
     load_main_window()
