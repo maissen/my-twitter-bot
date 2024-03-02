@@ -25,24 +25,29 @@ def load_main_window():
     rss_title.grid(row=0, column=1, sticky="w", padx=8, pady=10)
     rss_title.configure(background="white")  
     
-    # Create a frame to contain label and combobox for saved links
+    # Create a frame to contain label, combobox, and buttons for saved links
     saved_links = ttk.Frame(window)
     saved_links.grid(row=2, column=0, padx=10, pady=5, sticky="nsew")
+    
     saved_links_label = ttk.Label(saved_links, text="Saved Links:") 
     saved_links_label.grid(row=0, column=0, sticky="w", padx=(0, 5))
     
-    # Create combobox widget
-    saved_links_input = ttk.Combobox(saved_links, width=27, state="readonly")
+    saved_links_input = ttk.Combobox(saved_links, width=25, state="readonly")
     saved_links_input.grid(row=0, column=1, sticky="w", padx=8, pady=10)
     saved_links_input.configure(background="white")
     saved_links_input.set("-- There's no RSS saved --")
 
+    save_button = ttk.Button(saved_links, text="Save RSS", command=lambda: save_rss(saved_links_input, rss_title, rss_link))
+    save_button.grid(row=0, column=2, padx=5)
+
+    delete_button = ttk.Button(saved_links, text="Delete RSS", command=lambda: delete_rss(saved_links_input))
+    delete_button.grid(row=0, column=3, padx=5)
+
+    parse_button = ttk.Button(saved_links, text="Parse", command=lambda: parse_rss(saved_links_input))
+    parse_button.grid(row=0, column=4, padx=5)
+
     # Load saved RSS sources from file
     load_saved_sources(saved_links_input)
-
-    # Example button to call a function
-    button = ttk.Button(window, text="Save RSS", command=lambda: save_rss(saved_links_input, rss_title, rss_link))
-    button.grid(row=3, column=0, pady=5)  
 
     # Run the main event loop
     window.mainloop()
@@ -71,10 +76,10 @@ def save_rss(saved_links_input, rss_title, rss_link):
 
         for source in rss_sources:
             if source["title"] == title:
-                print("RSS title already exists!")
+                popup_message("Error", "RSS title already exists!")
                 return
             if source["link"] == link:
-                print("RSS link already exists!")
+                popup_message("Error", "RSS link already exists!")
                 return
 
         rss_sources.append({"title": title, "link": link})
@@ -89,11 +94,65 @@ def save_rss(saved_links_input, rss_title, rss_link):
 
         rss_title.delete(0, tk.END)
         rss_link.delete(0, tk.END)
+
+        popup_message("Success", f"{title} saved successfully")
     else:
         if not link:
-            print("RSS link is empty!")
+            popup_message("Error", "RSS link is empty!")
         elif not title:
-            print("RSS title is empty!")
+            popup_message("Error", "RSS title is empty!")
+
+def delete_rss(saved_links_input):
+    title_to_delete = saved_links_input.get()
+    if title_to_delete:
+        try:
+            with open("My_rss_sources.dat", "rb") as file:
+                rss_sources = pickle.load(file)
+        except FileNotFoundError:
+            rss_sources = []
+
+        updated_sources = [source for source in rss_sources if source["title"] != title_to_delete]
+
+        with open("My_rss_sources.dat", "wb") as file:
+            pickle.dump(updated_sources, file)
+
+        if updated_sources:
+            saved_links_input["values"] = [source["title"] for source in updated_sources]
+            saved_links_input.set(updated_sources[0]["title"])
+            popup_message("Success", f"{title_to_delete} deleted successfully")
+        else:
+            saved_links_input["values"] = []
+            saved_links_input.set("-- There's no RSS saved --")
+            popup_message("Warning", "There's no saved RSS to delete")
+    else:
+        popup_message("Error", "No RSS title selected!")
+
+def parse_rss(saved_links_input):
+    selected_title = saved_links_input.get()
+    if selected_title:
+        try:
+            with open("My_rss_sources.dat", "rb") as file:
+                rss_sources = pickle.load(file)
+        except FileNotFoundError:
+            rss_sources = []
+
+        for source in rss_sources:
+            if source["title"] == selected_title:
+                popup_message("Info", f"'{selected_title}': {source['link']}")
+                break
+        else:
+            popup_message("Info", f"No RSS selected to parse!")
+    else:
+        popup_message("Error", "No RSS title selected!")
+
+def popup_message(title, message):
+    popup = tk.Toplevel()
+    popup.title(title)
+    popup.geometry("300x100")
+    label = ttk.Label(popup, text=message)
+    label.pack(pady=20)
+    # Schedule the closing of the popup after 2000 milliseconds (2 seconds)
+    popup.after(2500, popup.destroy)
 
 if __name__ == "__main__":
     load_main_window()
