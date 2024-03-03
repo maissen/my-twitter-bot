@@ -22,7 +22,7 @@ def parse_rss(saved_links_input):
 #                 popup_message("Info", f"'{selected_title}': {source['link']}")
                 link = source['link']
                 feed = feedparser.parse(link)
-                container_of_entries(feed)
+                container_of_entries(feed, source["title"])
                 break
         else:
             popup_message("Info", f"No RSS selected to parse!")
@@ -132,11 +132,21 @@ def load_main_window():
     rss_title_label.grid(row=0, column=0, sticky="w", padx=(0, 5))
     rss_title = ttk.Entry(title, width=30) 
     rss_title.grid(row=0, column=1, sticky="w", padx=8, pady=10)
-    rss_title.configure(background="white")  
-    
+    rss_title.configure(background="white")
+
+    # Create a frame to contain label, entry, and save button for RSS title
+    title_save_frame = ttk.Frame(title)
+    title_save_frame.grid(row=0, column=2, padx=(10, 0), pady=5, sticky="w")
+    save_button = ttk.Button(title_save_frame, text="Save RSS", command=lambda: save_rss(saved_links_input, rss_title, rss_link))
+    save_button.grid(row=0, column=0, padx=5)
+
+    # Create a separator
+    separator = ttk.Separator(window, orient='horizontal')
+    separator.grid(row=2, column=0, sticky='ew', padx=10, pady=5)
+
     # Create a frame to contain label, combobox, and buttons for saved links
     saved_links = ttk.Frame(window)
-    saved_links.grid(row=2, column=0, padx=10, pady=5, sticky="nsew")
+    saved_links.grid(row=3, column=0, padx=10, pady=5, sticky="nsew")
     
     saved_links_label = ttk.Label(saved_links, text="Saved Links:") 
     saved_links_label.grid(row=0, column=0, sticky="w", padx=(0, 5))
@@ -146,27 +156,25 @@ def load_main_window():
     saved_links_input.configure(background="white")
     saved_links_input.set("-- There's no RSS saved --")
 
-    save_button = ttk.Button(saved_links, text="Save RSS", command=lambda: save_rss(saved_links_input, rss_title, rss_link))
-    save_button.grid(row=0, column=2, padx=5)
-
     delete_button = ttk.Button(saved_links, text="Delete RSS", command=lambda: delete_rss(saved_links_input))
-    delete_button.grid(row=0, column=3, padx=5)
+    delete_button.grid(row=0, column=2, padx=5)
 
     parse_button = ttk.Button(saved_links, text="Parse", command=lambda: parse_rss(saved_links_input))
-    parse_button.grid(row=0, column=4, padx=5)
+    parse_button.grid(row=0, column=3, padx=5)
 
     # Load saved RSS sources from file
     load_saved_sources(saved_links_input)
 
     # Run the main event loop
     window.mainloop()
+
     
 
 
 
 #
 # all entries container
-def container_of_entries(x):
+def container_of_entries(x, rss_title):
     # Create the main window
     root = tk.Tk()
 
@@ -178,13 +186,13 @@ def container_of_entries(x):
 
     # Create a label for parsing information
     if len(x.entries) > 1:
-        parsing_label = ttk.Label(root, text=f"Parsing from test ( {len(x.entries)} Entries )")
+        parsing_label = ttk.Label(root, text=f"Parsing from \"{rss_title}\" ( {len(x.entries)} Entries )")
     else:
-        parsing_label = ttk.Label(root, text=f"Parsing from test ( {len(x.entries)} Entry )")
+        parsing_label = ttk.Label(root, text=f"Parsing from \"{rss_title}\" ( {len(x.entries)} Entry )")
     parsing_label.grid(row=0, column=0, padx=10, pady=(5, 0), sticky="nsew")
 
     # Create a label for the title
-    title_label = ttk.Label(root, text=f"{x.feed.title}", font=("TkDefaultFont", 20))
+    title_label = ttk.Label(root, text=f"Feed : {x.feed.title}", font=("TkDefaultFont", 20))
     title_label.grid(row=1, column=0, padx=10, pady=(5, 0), sticky="nsew")
 
     # Create a separator line
@@ -250,7 +258,7 @@ def container_of_entries(x):
 
 
 
-container_of_entries(feedparser.parse('https://feedparser.readthedocs.io/en/latest/examples/rss20.xml'))
+# container_of_entries(feedparser.parse('https://feedparser.readthedocs.io/en/latest/examples/rss20.xml'), "Maiss")
     
     
 # Function to be called when "Share now" button is clicked
