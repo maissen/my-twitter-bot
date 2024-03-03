@@ -30,14 +30,6 @@ def parse_rss(saved_links_input):
         popup_message("Error", "No RSS title selected!")
         
 
-    
-    
-import webbrowser
-# Function to be called when "Search" button is clicked
-def search_entry(entry):
-    webbrowser.open_new_tab(entry.link)
-    
-
 def save_rss(saved_links_input, rss_title, rss_link):
     title = rss_title.get()
     link = rss_link.get()
@@ -174,10 +166,34 @@ def load_main_window():
 
 #
 # all entries container
-def container_of_entries(feed):
+def container_of_entries(x):
     # Create the main window
     root = tk.Tk()
-    root.title('RSS Feed Entries')
+
+    # Define the window title
+    if "title" in x.feed.keys():
+        root.title(x.feed.title)
+    else:
+        root.title('RSS Feed Entries')
+
+    # Create a label for parsing information
+    if len(x.entries) > 1:
+        parsing_label = ttk.Label(root, text=f"Parsing from test ( {len(x.entries)} Entries )")
+    else:
+        parsing_label = ttk.Label(root, text=f"Parsing from test ( {len(x.entries)} Entry )")
+    parsing_label.grid(row=0, column=0, padx=10, pady=(5, 0), sticky="nsew")
+
+    # Create a label for the title
+    title_label = ttk.Label(root, text=f"{x.feed.title}", font=("TkDefaultFont", 20))
+    title_label.grid(row=1, column=0, padx=10, pady=(5, 0), sticky="nsew")
+
+    # Create a separator line
+    separator = ttk.Separator(root, orient='horizontal')
+    separator.grid(row=2, column=0, sticky='ew', padx=10, pady=(5, 0))
+
+    # Create a frame to contain label and entry for source
+    source = ttk.Frame(root)
+    source.grid(row=3, column=0, padx=10, pady=5, sticky="nsew")
 
     # Create a canvas with both vertical and horizontal scrollbars
     canvas = tk.Canvas(root, width=600 + 2 * 15, height=450 + 2 * 15)
@@ -188,24 +204,24 @@ def container_of_entries(feed):
     # Configure the canvas and scrollbars
     canvas.configure(yscrollcommand=vscrollbar.set, xscrollcommand=hscrollbar.set)
     canvas.create_window((0, 0), window=scrollable_frame, anchor='nw')
-    canvas.grid(row=0, column=0, sticky='nsew')
-    vscrollbar.grid(row=0, column=1, sticky='ns')
-    hscrollbar.grid(row=1, column=0, sticky='ew')
+    canvas.grid(row=4, column=0, sticky='nsew')
+    vscrollbar.grid(row=4, column=1, sticky='ns')
+    hscrollbar.grid(row=5, column=0, sticky='ew')
 
     # Add each entry to the frame
-    for i, entry in enumerate(feed.entries):
+    for i, entry in enumerate(x.entries):
         # Create a frame for the entry
         entry_frame = tk.Frame(scrollable_frame, padx=10, pady=9, cursor='hand2', background='SystemButtonFace')
         entry_frame.pack(fill='x', expand=True)
 
         # Create a label for the entry
         label = tk.Label(
-            entry_frame, 
-            text=f'{i+1}. {entry.title}', 
-            wraplength=600, 
-            justify='left', 
+            entry_frame,
+            text=f'{i+1}. {entry.title}',
+            wraplength=600,
+            justify='left',
             cursor='hand2',  # Change cursor to a pointer
-            background='SystemButtonFace', 
+            background='SystemButtonFace',
             highlightbackground='lightgray',  # Set the initial background color
             anchor='w'  # Align text to the left
         )
@@ -225,11 +241,31 @@ def container_of_entries(feed):
     canvas.config(scrollregion=canvas.bbox('all'))
 
     # Configure the grid to resize with the window
-    root.grid_rowconfigure(0, weight=1)
+    root.grid_rowconfigure(4, weight=1)
     root.grid_columnconfigure(0, weight=1)
 
     # Run the main loop
     root.mainloop()
+
+
+
+
+container_of_entries(feedparser.parse('https://feedparser.readthedocs.io/en/latest/examples/rss20.xml'))
+    
+    
+# Function to be called when "Share now" button is clicked
+def push_post_to_twitter(window, entry_title, entry_summary, hashtags):
+    try:
+        print("Share Button is clicked!")
+        print(f"title : {entry_title}")
+        print(f"summary : {entry_summary}")
+        print(f"hashtags : {input_hashtags(hashtags)}")
+        popup_message("Success", "Post is shared in twitter successfully")
+    except:
+        popup_message("Error", "Oops, an error occured, please try again!")
+    else:
+        # Close the window
+        window.destroy()
     
     
 #
@@ -292,7 +328,7 @@ def show_clicked_entry_details(root, entry):
     button_search.pack(side="left", padx=5)  # Add a left padding of 5px
 
     # Create a button labeled "Share now"
-    button_share = tk.Button(button_frame, text="Share now", command=lambda: push_post_to_twitter(entry_title.get("1.0", "end-1c"), entry_summary.get("1.0", "end-1c"), recent_hashtags.get("1.0", "end-1c")))
+    button_share = tk.Button(button_frame, text="Share now", command=lambda: push_post_to_twitter(window, entry_title.get("1.0", "end-1c"), entry_summary.get("1.0", "end-1c"), recent_hashtags.get("1.0", "end-1c")))
     button_share.pack(side="right", padx=5)  # Add a right padding of 5px
 
     # Configure the grid to make the text input fields expand to fill the available space
