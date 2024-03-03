@@ -324,7 +324,10 @@ def container_of_entries(x, rss_title):
     parsing_label.grid(row=0, column=0, padx=10, pady=(5, 0), sticky="nsew")
 
     # Create a label for the title
-    title_label = ttk.Label(root, text=f"Feed : {x.feed.title}", font=("TkDefaultFont", 20))
+    if x.feed.get('title') != None:
+        title_label = ttk.Label(root, text=f"Feed : {x.feed.title}", font=("TkDefaultFont", 20))
+    else:
+        title_label = ttk.Label(root, text=f"Feed of {rss_title}", font=("TkDefaultFont", 20))
     title_label.grid(row=1, column=0, padx=10, pady=(5, 0), sticky="nsew")
 
     # Create a separator line
@@ -427,7 +430,10 @@ def show_clicked_entry_details(root, entry):
     entry_title.grid(row=0, column=1, sticky="ew", pady=(0, 20))  # Add a bottom margin of 20px
     
     if('title' in entry.keys()):
-        entry_title.insert("1.0", entry.title)
+        if('title_detail' in entry.keys() and entry.title_detail.type == 'text/plain' and entry.title_detail.value != entry.title):
+            entry_title.insert("1.0", f"Title : {entry.title}\n\nTitle-detail: {entry.title_detail.value}")
+        else:
+            entry_title.insert("1.0", f"{entry.title}")
     else:
         entry_title.insert("1.0", "This entry doesn't have a title to show!")
     
@@ -442,9 +448,13 @@ def show_clicked_entry_details(root, entry):
     entry_summary = tk.Text(window, height=5, width=30)
     entry_summary.grid(row=1, column=1, sticky="ew", pady=(0, 20))  # Add a bottom margin of 20px
     if('summary' in entry.keys()): 
-        entry_summary.insert("1.0", entry.summary)
+        if('summary_details' in entry.keys()):
+            entry_summary.insert("1.0", f"Title : {entry.title}\n\nTitle-detail: {entry.title_detail.value}")
+        else:
+            entry_summary.insert("1.0", f"{entry.summary}")
     else:
         entry_summary.insert("1.0", "This entry doesn't have a summary to show!")
+    print(entry)
    
     scrollbar2 = tk.Scrollbar(window, command=entry_summary.yview) # Create a scrollbar for the second text input field
     scrollbar2.grid(row=1, column=2, sticky="ns")
