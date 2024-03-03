@@ -71,6 +71,8 @@ def save_rss(saved_links_input, rss_title, rss_link):
             popup_message("Error", "Please enter a Link!")
         elif not title:
             popup_message("Error", "Please enter a Title!")
+            
+            
 
 def delete_rss(saved_links_input):
     title_to_delete = saved_links_input.get()
@@ -97,7 +99,56 @@ def delete_rss(saved_links_input):
     else:
         popup_message("Error", "No RSS title selected!")
         
+
+            
+
+def delete_confirm_window(saved_links_input, rss_source):
+    # Create the main window
+    window = tk.Tk()
+    window.title("Delete Confirmation")
+
+    # Set window width and height
+    window_width = 400
+    window_height = 140
+
+    # Calculate the center position of the screen
+    screen_width = window.winfo_screenwidth()
+    screen_height = window.winfo_screenheight()
+    x = (screen_width - window_width) // 2
+    y = (screen_height - window_height) // 2
+
+    # Set window geometry
+    window.geometry(f"{window_width}x{window_height}+{x}+{y}")
+
+    # Create label
+    label = ttk.Label(window, text=f"Are you sure you want to delete {rss_source}?")
+    label.pack(pady=20)
+
+    # Function to handle delete button click
+    def delete_clicked():
+        delete_rss(saved_links_input)
+        window.destroy()
+    
+    def cancel_clicked():
+        window.destroy()
         
+
+    # Create a frame to hold the buttons aligned to the right
+    button_frame = ttk.Frame(window)
+    button_frame.pack(side="bottom", pady=20)
+
+    # Create the delete button with padding and aligned to the right
+    delete_button = ttk.Button(button_frame, text="Delete", command=delete_clicked)
+    delete_button.pack(side="right", padx=10)
+
+    # Create the cancel button with padding and aligned to the right
+    cancel_button = ttk.Button(button_frame, text="Cancel", command=cancel_clicked)
+    cancel_button.pack(side="right", padx=10)
+
+    # Run the main event loop
+    window.mainloop()
+
+
 
 
 def update_rss(saved_links_input, new_title, new_link, window):
@@ -287,7 +338,7 @@ def load_main_window():
     update_button = ttk.Button(saved_links, text="Update RSS", command=lambda: update_rss_window(saved_links_input))
     update_button.grid(row=0, column=2, padx=5)
 
-    delete_button = ttk.Button(saved_links, text="Delete RSS", command=lambda: delete_rss(saved_links_input))
+    delete_button = ttk.Button(saved_links, text="Delete RSS", command=lambda: delete_confirm_window(saved_links_input, saved_links_input.get()))
     delete_button.grid(row=0, column=3, padx=5)
 
     parse_button = ttk.Button(saved_links, text="Parse", command=lambda: parse_rss(saved_links_input))
@@ -454,7 +505,6 @@ def show_clicked_entry_details(root, entry):
             entry_summary.insert("1.0", f"{entry.summary}")
     else:
         entry_summary.insert("1.0", "This entry doesn't have a summary to show!")
-    print(entry)
    
     scrollbar2 = tk.Scrollbar(window, command=entry_summary.yview) # Create a scrollbar for the second text input field
     scrollbar2.grid(row=1, column=2, sticky="ns")
