@@ -2,6 +2,17 @@ import tkinter as tk
 from tkinter import ttk
     
     
+
+def is_valid_rss_feed(link):
+    try:
+        feed = feedparser.parse(link)
+        if feed.get('bozo_exception') is None:
+            return True
+    except Exception as e:
+        pass
+    return False
+
+
     
 def input_hashtags(hashtags_input):
     hashtags_list = hashtags_input.split()

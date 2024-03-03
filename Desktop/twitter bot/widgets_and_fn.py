@@ -21,15 +21,15 @@ def parse_rss(saved_links_input):
 
         for source in rss_sources:
             if source["title"] == selected_title:
-#                 popup_message("Info", f"'{selected_title}': {source['link']}")
                 link = source['link']
                 feed = feedparser.parse(link)
-                container_of_entries(feed, source["title"])
+                if is_valid_rss_feed(link):
+                    print("Valid RSS feed!")
+                    container_of_entries(feed, source["title"])
+                else:
+                    popup_message("Error", f"Invalid rss link! Please verify the link of {source['title']}")
+                
                 break
-        else:
-            popup_message("Info", f"No RSS selected to parse!")
-    else:
-        popup_message("Error", "No RSS title selected!")
         
 
 def save_rss(saved_links_input, rss_title, rss_link):
