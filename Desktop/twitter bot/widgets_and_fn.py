@@ -22,13 +22,11 @@ def parse_rss(saved_links_input):
         for source in rss_sources:
             if source["title"] == selected_title:
                 link = source['link']
-                feed = feedparser.parse(link)
-                if is_valid_rss_feed(link):
-                    print("Valid RSS feed!")
+                try:
+                    feed = feedparser.parse(link)
                     container_of_entries(feed, source["title"])
-                else:
+                except:
                     popup_message("Error", f"Invalid rss link! Please verify the link of {source['title']}")
-                
                 break
         
 
@@ -230,7 +228,7 @@ def popup_message(title, message):
     label = ttk.Label(popup, text=message)
     label.pack(pady=20)
     # Schedule the closing of the popup after 2000 milliseconds (2 seconds)
-    popup.after(2500, popup.destroy)
+    popup.after(3500, popup.destroy)
 
 
 
