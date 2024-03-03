@@ -4,10 +4,6 @@ import feedparser
 from my_functions import *
 import pickle
 import webbrowser
-
-
-
-            
             
 
 def parse_rss(saved_links_input):
@@ -31,6 +27,7 @@ def parse_rss(saved_links_input):
                 except:
                     popup_message("Error", "Invalid rss link! Please verify the link.")
                 break
+        
         
 
 def save_rss(saved_links_input, rss_title, rss_link):
@@ -101,7 +98,6 @@ def delete_rss(saved_links_input):
         
 
             
-
 def delete_confirm_window(saved_links_input, rss_source):
     # Create the main window
     window = tk.Tk()
@@ -270,19 +266,32 @@ def update_rss_window(saved_links_input):
         popup_message("Error", "No RSS title selected!")
 
             
-
-
-
-
-
+            
 def popup_message(title, message):
+    # Create the popup window
     popup = tk.Toplevel()
     popup.title(title)
-    popup.geometry("300x100")
+    popup_width = 300
+    popup_height = 80
+
+    # Get the screen width and height
+    screen_width = popup.winfo_screenwidth()
+    screen_height = popup.winfo_screenheight()
+
+    # Calculate the position of the popup window to center it on the screen
+    x = (screen_width - popup_width) // 2
+    y = (screen_height - popup_height) // 2
+
+    # Set the geometry of the popup window
+    popup.geometry(f"{popup_width}x{popup_height}+{x}+{y}")
+
+    # Create and pack the label
     label = ttk.Label(popup, text=message)
     label.pack(pady=20)
-    # Schedule the closing of the popup after 2000 milliseconds (2 seconds)
+
+    # Schedule the closing of the popup after 3500 milliseconds (3.5 seconds)
     popup.after(3500, popup.destroy)
+
 
 
 
@@ -434,12 +443,22 @@ def container_of_entries(x, rss_title):
     scrollable_frame.update_idletasks()
     canvas.config(scrollregion=canvas.bbox('all'))
 
+    # Calculate the center position of the screen
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    x = (screen_width - root.winfo_reqwidth()) // 2
+    y = (screen_height - root.winfo_reqheight()) // 2
+
+    # Set the window position
+    root.geometry(f"+{x}+{y}")
+
     # Configure the grid to resize with the window
     root.grid_rowconfigure(4, weight=1)
     root.grid_columnconfigure(0, weight=1)
 
     # Run the main loop
     root.mainloop()
+
 
 
 
