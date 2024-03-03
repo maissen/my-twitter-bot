@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import ttk
 import feedparser
 from my_functions import *
+import pickle
+import webbrowser
 
 
 
@@ -93,6 +95,131 @@ def delete_rss(saved_links_input):
             popup_message("Warning", "There's no saved RSS to delete")
     else:
         popup_message("Error", "No RSS title selected!")
+        
+        
+
+
+def update_rss(saved_links_input, new_title, new_link, window):
+    # Check if new_title and new_link are not empty
+    if not new_title.strip() or not new_link.strip():
+        popup_message("Error", "Please enter both title and link!")
+        return
+
+    title_to_update = saved_links_input.get()
+    if title_to_update:
+        try:
+            with open("My_rss_sources.dat", "rb") as file:
+                rss_sources = pickle.load(file)
+        except FileNotFoundError:
+            rss_sources = []
+
+        # Check if the new title or link already exists
+        for source in rss_sources:
+            if source["title"] != title_to_update:  # Skip the current title being updated
+                if source["title"] == new_title:
+                    popup_message("Error", "RSS title already exists!")
+                    return
+                if source["link"] == new_link:
+                    popup_message("Error", "RSS link already exists!")
+                    return
+
+        # Update the title and link
+        for source in rss_sources:
+            if source["title"] == title_to_update:
+                old_title = source["title"]
+                old_link = source["link"]
+
+                source["title"] = new_title
+                source["link"] = new_link
+                break
+
+        # Save the updated data back to the file
+        with open("My_rss_sources.dat", "wb") as file:
+            pickle.dump(rss_sources, file)
+
+        # Update the values in the combobox
+        saved_links_input["values"] = [source["title"] for source in rss_sources]
+        saved_links_input.set(new_title)
+        print("Updated!")
+        window.destroy()
+    else:
+        popup_message("Error", "No RSS title selected!")
+
+
+
+def update_rss_window(saved_links_input):
+    title_to_update = saved_links_input.get()
+    if title_to_update:
+        try:
+            with open("My_rss_sources.dat", "rb") as file:
+                rss_sources = pickle.load(file)
+        except FileNotFoundError:
+            rss_sources = []
+
+        for source in rss_sources:
+            if source["title"] == title_to_update:
+                old_title = source["title"]
+                old_link = source["link"]
+                
+                # Create main window
+                window = tk.Tk()
+                window.title("Update RSS")
+
+                # Calculate the center position of the screen
+                window_width = 400  # You can adjust this value as needed
+                window_height = 200  # You can adjust this value as needed
+                screen_width = window.winfo_screenwidth()
+                screen_height = window.winfo_screenheight()
+                x = (screen_width - window_width) // 2
+                y = (screen_height - window_height) // 2
+
+                # Set window geometry
+                window.geometry(f"{window_width}x{window_height}+{x}+{y}")
+
+                # Create frame for inputs
+                input_frame = ttk.Frame(window)
+                input_frame.pack(padx=10, pady=10)
+
+                # Label and input for updating link
+                link_label = ttk.Label(input_frame, text="Update link:")
+                link_label.grid(row=0, column=0, sticky="w", padx=(0, 5))
+
+                link_input = ttk.Entry(input_frame, width=40)
+                link_input.insert(0, old_link)
+                link_input.grid(row=0, column=1, sticky="w")
+
+                # Add margin between the two lines
+                ttk.Label(input_frame).grid(row=1, columnspan=2, pady=1)
+
+                # Label and input for updating title
+                title_label = ttk.Label(input_frame, text="Update title:")
+                title_label.grid(row=2, column=0, sticky="w", padx=(0, 5))
+
+                title_input = ttk.Entry(input_frame, width=40)
+                title_input.insert(0, old_title)
+                title_input.grid(row=2, column=1, sticky="w")
+
+                # Error label
+                error_label = ttk.Label(window, text="", foreground="red")
+                error_label.pack(pady=(0, 5))
+
+                # Button to update RSS
+                update_button = ttk.Button(window, text="Update", command=lambda: update_rss(saved_links_input, title_input.get(), link_input.get(), window))
+                update_button.pack(pady=0)
+
+                # Run the main event loop
+                window.mainloop()
+                
+                return  # Exit the function after creating and running the window
+
+        # If the loop completes without finding a matching title, show an error message
+        popup_message("Error", "RSS title not found!")
+    else:
+        popup_message("Error", "No RSS title selected!")
+
+            
+
+
 
 
 
@@ -156,17 +283,21 @@ def load_main_window():
     saved_links_input.configure(background="white")
     saved_links_input.set("-- There's no RSS saved --")
 
+    update_button = ttk.Button(saved_links, text="Update RSS", command=lambda: update_rss_window(saved_links_input))
+    update_button.grid(row=0, column=2, padx=5)
+
     delete_button = ttk.Button(saved_links, text="Delete RSS", command=lambda: delete_rss(saved_links_input))
-    delete_button.grid(row=0, column=2, padx=5)
+    delete_button.grid(row=0, column=3, padx=5)
 
     parse_button = ttk.Button(saved_links, text="Parse", command=lambda: parse_rss(saved_links_input))
-    parse_button.grid(row=0, column=3, padx=5)
+    parse_button.grid(row=0, column=4, padx=5)
 
     # Load saved RSS sources from file
     load_saved_sources(saved_links_input)
 
     # Run the main event loop
     window.mainloop()
+
 
     
 
@@ -274,6 +405,8 @@ def push_post_to_twitter(window, entry_title, entry_summary, hashtags):
     else:
         # Close the window
         window.destroy()
+        
+
     
     
 #
@@ -332,7 +465,7 @@ def show_clicked_entry_details(root, entry):
     button_frame.grid(row=3, column=1, sticky="n", pady=(25, 0))  # Add a top margin of 25px
 
     # Create a button labeled "Search on web"
-    button_search = tk.Button(button_frame, text="Search Entry on web", command=lambda: search_entry(entry))
+    button_search = tk.Button(button_frame, text="Search Entry on web", command=lambda: webbrowser.open(entry.link))
     button_search.pack(side="left", padx=5)  # Add a left padding of 5px
 
     # Create a button labeled "Share now"
