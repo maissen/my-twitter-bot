@@ -23,8 +23,10 @@ def parse_rss(saved_links_input):
             if source["title"] == selected_title:
                 link = source['link']
                 try:
-                    feed = feedparser.parse(link)
-                    container_of_entries(feed, source["title"])
+                    x = feedparser.parse(link)
+                    if len(x.feed.entries > 0):
+                        container_of_entries(x, source["title"])
+                        break
                 except:
                     popup_message("Error", f"Invalid rss link! Please verify the link of {source['title']}")
                 break
