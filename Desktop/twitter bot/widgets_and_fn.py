@@ -21,7 +21,7 @@ def parse_rss(saved_links_input):
                 try:
                     x = feedparser.parse(link)
                     if(len(x.entries) > 0):
-                        container_of_entries(x, source["title"])
+                        create_main_window(x, source["title"])
                     else:
                         popup_message("Error", "link is not valid or you can try later!")
                 except:
@@ -360,16 +360,158 @@ def load_main_window():
     window.mainloop()
 
 
+
+
+# Function to be called when "Share now" button is clicked
+def push_post_to_twitter(entry_title, entry_summary, hashtags):
+    try:
+        print("Share Button is clicked!")
+        print(f"title : {entry_title}")
+        print(f"summary : {entry_summary}")
+        print(f"hashtags : {input_hashtags(hashtags)}")
+        popup_message("Success", "Post is shared in twitter successfully")
+    except:
+        popup_message("Error", "Oops, an error occured, please try again!")
     
+    
+    
+################################################################################################################################################################
+################################################################################################################################################################
+def show_clicked_entry_details(root, entry, title_entry, summary_entry):
+    
+    if('title' in entry.keys()):
+        if('title_detail' in entry.keys() and entry.title_detail.type == 'text/plain' and entry.title_detail.value != entry.title):
+            title_entry.delete('1.0', 'end')  # Delete from the beginning to the end
+            title_entry.insert('1.0', f"Title : {entry.title}\n\nTitle-detail: {entry.title_detail.value}")
+        else:
+            title_entry.delete('1.0', 'end')  # Delete from the beginning to the end
+            title_entry.insert("1.0", f"{entry.title}")
+    else:
+        title_entry.delete('1.0', 'end')  # Delete from the beginning to the end
+        title_entry.insert("1.0", "This entry doesn't have a title to show!")
+        
+    
+    if('summary' in entry.keys()): 
+        if('summary_details' in entry.keys()):
+            summary_entry.delete('1.0', 'end')
+            summary_entry.insert("1.0", f"Title : {entry.title}\n\nTitle-detail: {entry.title_detail.value}")
+        else:
+            summary_entry.delete('1.0', 'end')
+            summary_entry.insert("1.0", f"{entry.summary}")
+    else:
+        summary_entry.delete('1.0', 'end')
+        summary_entry.insert("1.0", "This entry doesn't have a summary to show!")
+        
+    
+    
+def search_function():
+    print("Search button clicked")
 
+def share_function():
+    print("Share button clicked")
 
-
-#
-# all entries container
-def container_of_entries(x, rss_title):
-    # Create the main window
+def load_hashtags_function():
+    print("Load Hashtags button clicked")
+    
+    
+    
+def create_main_window(x, rss_title):
     root = tk.Tk()
+    root.title("Two Halves Example")
 
+    # Padding
+    padding_x = 15
+    padding_y = 15
+    bottom_padding = 5  # Adding a little padding at the bottom
+
+    # Get main window width and height
+    window_width = 1250 + 2 * padding_x + 20  # Adding 20px to the width
+    window_height = 650 + 2 * padding_y + bottom_padding  # Adjusted height to add padding at the bottom
+
+    # Set window size
+    root.geometry(f"{window_width}x{window_height}")
+
+    # Calculate the width of each division, considering padding
+    division_width = (1250 - padding_x) / 2
+
+    # Calculate the height of each division, considering top and bottom padding
+    division_height = 650
+
+    # Adjust y-coordinate for top padding
+    top_padding = padding_y // 2
+
+    # Define the margin between the frames
+    frame_margin = 20  # Adjust as needed
+
+    # Left side
+    left_frame = tk.Frame(root, width=division_width, height=division_height + 250)  # Adjust height here
+    left_frame.place(x=padding_x, y=top_padding + padding_y)
+
+    # Right side
+    right_frame = tk.Frame(root, width=division_width, height=division_height)
+    right_frame.place(x=division_width + 2 * padding_x + frame_margin, y=top_padding + padding_y)  # Adjusted x-coordinate with extra margin
+
+    # Add a frame within the right frame
+    custom_frame_height = 150
+    custom_frame = tk.Frame(right_frame, width=division_width, height=custom_frame_height, bg="royalblue")
+    custom_frame.place(x=0, y=0)
+
+    # Calculate the width of the input frame to occupy 60% of the right frame
+    input_frame_width = division_width * 0.6
+
+    # Add a frame under the royalblue frame
+    input_frame_height = 150
+    input_frame = tk.Frame(right_frame, width=input_frame_width, height=input_frame_height)
+    input_frame.place(relx=0.5, rely=1, anchor="s", y=-110)  # Translate the frame 110 pixels above
+
+    # Add labels and text input fields under the input frame
+    title_label = tk.Label(input_frame, text="Title:")
+    title_label.grid(row=0, column=0, padx=10, pady=10, sticky="w")
+    title_entry = tk.Text(input_frame, height=5, width=50, bg='#ccc')
+    title_entry.grid(row=0, column=1, padx=10, pady=10)
+
+    # Adding scrollbar for title entry
+    title_scrollbar = tk.Scrollbar(input_frame, orient="vertical", command=title_entry.yview)
+    title_scrollbar.grid(row=0, column=2, sticky="ns")
+    title_entry.config(yscrollcommand=title_scrollbar.set)
+
+    summary_label = tk.Label(input_frame, text="Summary:")
+    summary_label.grid(row=1, column=0, padx=10, pady=10, sticky="w")
+    summary_entry = tk.Text(input_frame, height=5, width=50, bg='#ccc')
+    summary_entry.grid(row=1, column=1, padx=10, pady=10)
+
+    # Adding scrollbar for summary entry
+    summary_scrollbar = tk.Scrollbar(input_frame, orient="vertical", command=summary_entry.yview)
+    summary_scrollbar.grid(row=1, column=2, sticky="ns")
+    summary_entry.config(yscrollcommand=summary_scrollbar.set)
+
+    hashtags_label = tk.Label(input_frame, text="Recent Hashtags:")
+    hashtags_label.grid(row=2, column=0, padx=10, pady=10, sticky="w")
+    hashtags_entry = tk.Text(input_frame, height=5, width=50, bg='#ccc')
+    hashtags_entry.grid(row=2, column=1, padx=10, pady=10)
+
+    # Adding scrollbar for hashtags entry
+    hashtags_scrollbar = tk.Scrollbar(input_frame, orient="vertical", command=hashtags_entry.yview)
+    hashtags_scrollbar.grid(row=2, column=2, sticky="ns")
+    hashtags_entry.config(yscrollcommand=hashtags_scrollbar.set)
+
+    # Add a frame for the buttons
+    buttons_frame = tk.Frame(input_frame)
+    buttons_frame.grid(row=3, columnspan=2, padx=10, pady=10, sticky="e")  # Columnspan to cover both columns
+
+    # Add Load Hashtags button
+    load_hashtags_button = tk.Button(buttons_frame, text="Load Hashtags", command=lambda: load_hashtags_function(), bg='#ccc', cursor="hand2")
+    load_hashtags_button.grid(row=0, column=0, padx=(0, 10))  # Adjust the right padding
+
+    # Add Share button
+    share_button = tk.Button(buttons_frame, text="Share", command=lambda: push_post_to_twitter(title_entry.get("1.0", "end-1c"), summary_entry.get("1.0", "end-1c"), hashtags_entry.get("1.0", "end-1c")), bg='#ccc', cursor="hand2")
+    share_button.grid(row=0, column=1, padx=(0, 10))  # Adjust the right padding
+
+    # Add Search button
+    search_button = tk.Button(buttons_frame, text="Search", command=lambda: search_function(), bg='#ccc', cursor="hand2")
+    search_button.grid(row=0, column=2)
+
+    # Integrate container_of_entries function contents to the left frame
     # Define the window title
     if "title" in x.feed.keys():
         root.title(x.feed.title)
@@ -378,38 +520,36 @@ def container_of_entries(x, rss_title):
 
     # Create a label for parsing information
     if len(x.entries) > 1:
-        parsing_label = ttk.Label(root, text=f"Parsing from \"{rss_title}\" ( {len(x.entries)} Entries )")
+        parsing_label = ttk.Label(left_frame, text=f"Parsing from \"{rss_title}\" ( {len(x.entries)} Entries )")
     else:
-        parsing_label = ttk.Label(root, text=f"Parsing from \"{rss_title}\" ( {len(x.entries)} Entry )")
+        parsing_label = ttk.Label(left_frame, text=f"Parsing from \"{rss_title}\" ( {len(x.entries)} Entry )")
     parsing_label.grid(row=0, column=0, padx=10, pady=(5, 0), sticky="nsew")
 
     # Create a label for the title
     if x.feed.get('title') != None:
-        title_label = ttk.Label(root, text=f"Feed : {x.feed.title}", font=("TkDefaultFont", 20))
+        title_label = ttk.Label(left_frame, text=f"Feed : {x.feed.title[:30]}", font=("TkDefaultFont", 20))
     else:
-        title_label = ttk.Label(root, text=f"Feed of {rss_title}", font=("TkDefaultFont", 20))
+        title_label = ttk.Label(left_frame, text=f"Feed of {rss_title}", font=("TkDefaultFont", 20))
     title_label.grid(row=1, column=0, padx=10, pady=(5, 0), sticky="nsew")
 
     # Create a separator line
-    separator = ttk.Separator(root, orient='horizontal')
+    separator = ttk.Separator(left_frame, orient='horizontal')
     separator.grid(row=2, column=0, sticky='ew', padx=10, pady=(5, 0))
 
     # Create a frame to contain label and entry for source
-    source = ttk.Frame(root)
+    source = ttk.Frame(left_frame)
     source.grid(row=3, column=0, padx=10, pady=5, sticky="nsew")
 
     # Create a canvas with both vertical and horizontal scrollbars
-    canvas = tk.Canvas(root, width=600 + 2 * 15, height=450 + 2 * 15)
-    vscrollbar = ttk.Scrollbar(root, orient='vertical', command=canvas.yview)
-    hscrollbar = ttk.Scrollbar(root, orient='horizontal', command=canvas.xview)
+    canvas = tk.Canvas(left_frame, width=600 + 2 * 15, height=450 + 2 * 15)
+    vscrollbar = ttk.Scrollbar(left_frame, orient='vertical', command=canvas.yview)
     scrollable_frame = ttk.Frame(canvas)
 
     # Configure the canvas and scrollbars
-    canvas.configure(yscrollcommand=vscrollbar.set, xscrollcommand=hscrollbar.set)
+    canvas.configure(yscrollcommand=vscrollbar.set)
     canvas.create_window((0, 0), window=scrollable_frame, anchor='nw')
-    canvas.grid(row=4, column=0, sticky='nsew')
-    vscrollbar.grid(row=4, column=1, sticky='ns')
-    hscrollbar.grid(row=5, column=0, sticky='ew')
+    canvas.grid(row=4, column=0, sticky='nsew')  # Adjusted row to 4
+    vscrollbar.grid(row=4, column=1, sticky='ns')  # Adjusted row to 4
 
     # Add each entry to the frame
     for i, entry in enumerate(x.entries):
@@ -431,7 +571,7 @@ def container_of_entries(x, rss_title):
         label.pack(fill='x', expand=True)
 
         # Bind the double click event to show details of the selected entry
-        label.bind('<Double-Button-1>', lambda event, entry=entry: show_clicked_entry_details(root, entry))
+        label.bind('<Double-Button-1>', lambda event, entry=entry: show_clicked_entry_details(root, entry, title_entry, summary_entry))
 
         # Bind the Enter event to change the background color on hover
         entry_frame.bind('<Enter>', lambda event, entry_frame=entry_frame: entry_frame.config(background='lightgray'))
@@ -453,111 +593,11 @@ def container_of_entries(x, rss_title):
     root.geometry(f"+{x}+{y}")
 
     # Configure the grid to resize with the window
-    root.grid_rowconfigure(4, weight=1)
-    root.grid_columnconfigure(0, weight=1)
+    left_frame.grid_rowconfigure(4, weight=1)
+    left_frame.grid_columnconfigure(0, weight=1)
 
-    # Run the main loop
     root.mainloop()
-
-
-
-
-
-# container_of_entries(feedparser.parse('https://feedparser.readthedocs.io/en/latest/examples/rss20.xml'), "Maiss")
     
     
-# Function to be called when "Share now" button is clicked
-def push_post_to_twitter(window, entry_title, entry_summary, hashtags):
-    try:
-        print("Share Button is clicked!")
-        print(f"title : {entry_title}")
-        print(f"summary : {entry_summary}")
-        print(f"hashtags : {input_hashtags(hashtags)}")
-        popup_message("Success", "Post is shared in twitter successfully")
-    except:
-        popup_message("Error", "Oops, an error occured, please try again!")
-    else:
-        # Close the window
-        window.destroy()
-        
-
     
     
-#
-# to show the clicked entry info
-def show_clicked_entry_details(root, entry):
-    # Create an instance of the Tk class
-    window = tk.Toplevel(root)  # Use Toplevel for additional windows
-    window.title(entry.title)
-    
-    window.geometry("750x400") # Set the width and height of the window    
-    window.configure(padx=15, pady=15) # Set the padding of the window
-
-    # Create the first label and text input field
-    title_label = tk.Label(window, text="Entry's title:")
-    title_label.grid(row=0, column=0, pady=10)
-    entry_title = tk.Text(window, height=5, width=30)
-    entry_title.grid(row=0, column=1, sticky="ew", pady=(0, 20))  # Add a bottom margin of 20px
-    
-    if('title' in entry.keys()):
-        if('title_detail' in entry.keys() and entry.title_detail.type == 'text/plain' and entry.title_detail.value != entry.title):
-            entry_title.insert("1.0", f"Title : {entry.title}\n\nTitle-detail: {entry.title_detail.value}")
-        else:
-            entry_title.insert("1.0", f"{entry.title}")
-    else:
-        entry_title.insert("1.0", "This entry doesn't have a title to show!")
-    
-    scrollbar1 = tk.Scrollbar(window, command=entry_title.yview) # Create a scrollbar for the first text input field
-    scrollbar1.grid(row=0, column=2, sticky="ns")
-    entry_title.config(yscrollcommand=scrollbar1.set) # Link the scrollbar to the first text input field
-
-    # Create the second label and text input field
-    summary_label = tk.Label(window, text="Entry's summary:")
-    summary_label.grid(row=1, column=0, pady=10)
-
-    entry_summary = tk.Text(window, height=5, width=30)
-    entry_summary.grid(row=1, column=1, sticky="ew", pady=(0, 20))  # Add a bottom margin of 20px
-    if('summary' in entry.keys()): 
-        if('summary_details' in entry.keys()):
-            entry_summary.insert("1.0", f"Title : {entry.title}\n\nTitle-detail: {entry.title_detail.value}")
-        else:
-            entry_summary.insert("1.0", f"{entry.summary}")
-    else:
-        entry_summary.insert("1.0", "This entry doesn't have a summary to show!")
-   
-    scrollbar2 = tk.Scrollbar(window, command=entry_summary.yview) # Create a scrollbar for the second text input field
-    scrollbar2.grid(row=1, column=2, sticky="ns")
-    entry_summary.config(yscrollcommand=scrollbar2.set)
-
-    # Create the third label and text input field
-    hashtags_label = tk.Label(window, text="Recent Hashtags:")
-    hashtags_label.grid(row=2, column=0, pady=10)
-
-    recent_hashtags = tk.Text(window, height=5, width=30)
-    recent_hashtags.grid(row=2, column=1, sticky="ew", pady=(0, 20))  # Add a bottom margin of 20px
-    
-    scrollbar3 = tk.Scrollbar(window, command=recent_hashtags.yview) # Create a scrollbar for the third text input field
-    scrollbar3.grid(row=2, column=2, sticky="ns")
-    recent_hashtags.config(yscrollcommand=scrollbar3.set)
-
-    # Create a frame to hold the buttons
-    button_frame = tk.Frame(window)
-    button_frame.grid(row=3, column=1, sticky="n", pady=(25, 0))  # Add a top margin of 25px
-
-    # Create a button labeled "Search on web"
-    button_search = tk.Button(button_frame, text="Search Entry on web", command=lambda: webbrowser.open(entry.link))
-    button_search.pack(side="left", padx=5)  # Add a left padding of 5px
-
-    # Create a button labeled "Share now"
-    button_share = tk.Button(button_frame, text="Share now", command=lambda: push_post_to_twitter(window, entry_title.get("1.0", "end-1c"), entry_summary.get("1.0", "end-1c"), recent_hashtags.get("1.0", "end-1c")))
-    button_share.pack(side="right", padx=5)  # Add a right padding of 5px
-
-    # Configure the grid to make the text input fields expand to fill the available space
-    window.grid_columnconfigure(1, weight=1)
-
-    # Start the event loop for this window
-    window.mainloop()
-
-    
-    
-
