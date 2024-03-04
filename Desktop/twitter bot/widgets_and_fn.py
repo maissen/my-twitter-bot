@@ -21,7 +21,7 @@ def parse_rss(saved_links_input):
                 try:
                     x = feedparser.parse(link)
                     if(len(x.entries) > 0):
-                        create_main_window(x, source["title"])
+                        entries_window(x, source["title"])
                     else:
                         popup_message("Error", "link is not valid or you can try later!")
                 except:
@@ -377,7 +377,7 @@ def push_post_to_twitter(entry_title, entry_summary, hashtags):
     
 ################################################################################################################################################################
 ################################################################################################################################################################
-def show_clicked_entry_details(root, entry, title_entry, summary_entry):
+def load_clicked_entry(root, entry, title_entry, summary_entry):
     
     if('title' in entry.keys()):
         if('title_detail' in entry.keys() and entry.title_detail.type == 'text/plain' and entry.title_detail.value != entry.title):
@@ -410,12 +410,27 @@ def search_function():
 def share_function():
     print("Share button clicked")
 
-def load_hashtags_function():
-    print("Load Hashtags button clicked")
+def load_hashtags_function(root, hashtags_entry):
+    try:
+        all_hashtags = ''
+        with open("Hashtags.txt", "r") as file:
+            # Iterate through each line in the file
+            for line in file:
+                # Print each word in the line (assuming each line contains a single word)
+                all_hashtags += line.strip() + " "
+                
+            hashtags_entry.delete('1.0', 'end')
+            hashtags_entry.insert("1.0", f"{all_hashtags}")
+    except FileNotFoundError:
+        # If the file doesn't exist, create a new one
+        print("The file 'Hashtags.txt' doesn't exist. Creating a new file...")
+        # Open the file in write mode to create it
+        with open("Hashtags.txt", "w") as file:
+            print("New file created.")
     
     
     
-def create_main_window(x, rss_title):
+def entries_window(x, rss_title):
     root = tk.Tk()
     root.title("Two Halves Example")
 
@@ -426,7 +441,7 @@ def create_main_window(x, rss_title):
 
     # Get main window width and height
     window_width = 1250 + 2 * padding_x + 20  # Adding 20px to the width
-    window_height = 650 + 2 * padding_y + bottom_padding  # Adjusted height to add padding at the bottom
+    window_height = 570 + 2 * padding_y + bottom_padding  # Adjusted height to add padding at the bottom
 
     # Set window size
     root.geometry(f"{window_width}x{window_height}")
@@ -500,7 +515,7 @@ def create_main_window(x, rss_title):
     buttons_frame.grid(row=3, columnspan=2, padx=10, pady=10, sticky="e")  # Columnspan to cover both columns
 
     # Add Load Hashtags button
-    load_hashtags_button = tk.Button(buttons_frame, text="Load Hashtags", command=lambda: load_hashtags_function(), bg='#ccc', cursor="hand2")
+    load_hashtags_button = tk.Button(buttons_frame, text="Load Hashtags", command=lambda: load_hashtags_function(root, hashtags_entry), bg='#ccc', cursor="hand2")
     load_hashtags_button.grid(row=0, column=0, padx=(0, 10))  # Adjust the right padding
 
     # Add Share button
@@ -508,7 +523,7 @@ def create_main_window(x, rss_title):
     share_button.grid(row=0, column=1, padx=(0, 10))  # Adjust the right padding
 
     # Add Search button
-    search_button = tk.Button(buttons_frame, text="Search", command=lambda: search_function(), bg='#ccc', cursor="hand2")
+    search_button = tk.Button(buttons_frame, text="Search", command=lambda: webbrowser.open(entry.link), bg='#ccc', cursor="hand2")
     search_button.grid(row=0, column=2)
 
     # Integrate container_of_entries function contents to the left frame
@@ -520,14 +535,20 @@ def create_main_window(x, rss_title):
 
     # Create a label for parsing information
     if len(x.entries) > 1:
-        parsing_label = ttk.Label(left_frame, text=f"Parsing from \"{rss_title}\" ( {len(x.entries)} Entries )")
+        if len(rss_title) <= 30:
+            parsing_label = ttk.Label(left_frame, text=f"Parsing from \"{rss_title}\" ( {len(x.entries)} Entries )")
+        else:
+            parsing_label = ttk.Label(left_frame, text=f"Parsing from \"{rss_title[:30]}\" ( {len(x.entries)} Entries )")
     else:
         parsing_label = ttk.Label(left_frame, text=f"Parsing from \"{rss_title}\" ( {len(x.entries)} Entry )")
     parsing_label.grid(row=0, column=0, padx=10, pady=(5, 0), sticky="nsew")
 
     # Create a label for the title
     if x.feed.get('title') != None:
-        title_label = ttk.Label(left_frame, text=f"Feed : {x.feed.title[:30]}", font=("TkDefaultFont", 20))
+        if len(x.feed.title) <= 40:
+            title_label = ttk.Label(left_frame, text=f"Feed : {x.feed.title}", font=("TkDefaultFont", 20))
+        else:
+            title_label = ttk.Label(left_frame, text=f"Feed : {x.feed.title[:40]}...", font=("TkDefaultFont", 20))
     else:
         title_label = ttk.Label(left_frame, text=f"Feed of {rss_title}", font=("TkDefaultFont", 20))
     title_label.grid(row=1, column=0, padx=10, pady=(5, 0), sticky="nsew")
@@ -571,7 +592,7 @@ def create_main_window(x, rss_title):
         label.pack(fill='x', expand=True)
 
         # Bind the double click event to show details of the selected entry
-        label.bind('<Double-Button-1>', lambda event, entry=entry: show_clicked_entry_details(root, entry, title_entry, summary_entry))
+        label.bind('<Double-Button-1>', lambda event, entry=entry: load_clicked_entry(root, entry, title_entry, summary_entry))
 
         # Bind the Enter event to change the background color on hover
         entry_frame.bind('<Enter>', lambda event, entry_frame=entry_frame: entry_frame.config(background='lightgray'))
